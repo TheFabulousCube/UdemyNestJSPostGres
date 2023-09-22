@@ -10,7 +10,7 @@ const mockTagEntities = mockTags.map((tag, index) => ({
   name: tag,
 }));
 
-fdescribe('TagService', () => {
+describe('TagService', () => {
   let service: TagService;
   let tagRepository: Repository<TagEntity>;
 
@@ -40,7 +40,10 @@ fdescribe('TagService', () => {
   });
 
   it('should return all tags', async () => {
-    console.log('result: ', await service.findAll());
-    expect(service.findAll()).resolves.toBe(mockTagEntities);
+    await expect(service.findAll()).resolves.toBe(mockTagEntities);
+  });
+
+  it('should save all tags', async () => {
+    await expect(service.saveAll(mockTags)).resolves;
   });
 });
