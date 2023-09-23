@@ -1,3 +1,4 @@
+import { LoginUserDto } from 'src/dto/loginUser.dto';
 import { CreateUserDto } from '../dto/createUser.dto';
 import { UserResponseInterface } from '../types/userResponse.interface';
 import { UserEntity } from './user.entity';
@@ -18,18 +19,34 @@ export const mockCreateUserDTO: CreateUserDto = {
 };
 
 /**
+ * Existing email, an insert for user with this email should reject
+ */
+export const mockInUseUsername: string = 'existingUsername';
+
+/**
+ * Existing email, an insert for user with this email should reject
+ */
+export const mockInUseEmail: string = 'existing@somewhere.com';
+
+/**
  * Existing User Create DTO
  * will be rejected on insert
  */
 export const mockExistingUserDTO: CreateUserDto = {
-  username: 'mockExistingUser',
-  email: 'existing@somewhere.com',
+  username: mockInUseUsername,
+  email: mockInUseEmail,
+  password: 'mockPass',
+};
+
+export const mockLoginUserDTO: LoginUserDto = {
+  email: mockInUseEmail,
   password: 'mockPass',
 };
 
 /**
  * New user entity,
- * won't collide on insert
+ * won't collide on insert;
+ * won't be found for login
  */
 export const mockUserEntity: UserEntity = {
   id: 5,
@@ -37,7 +54,7 @@ export const mockUserEntity: UserEntity = {
   email: mockCreateUserDTO.email,
   bio: 'self',
   image: 'imageURL',
-  password: mockCreateUserDTO.password,
+  password: 'mockPass',
   favorites: [],
   followers: [],
   following: [],
@@ -97,7 +114,7 @@ export const mockResponse: UserResponseInterface = {
 };
 
 /**
- * Newly created user sent to controller
+ * Newly created user with default values
  */
 export const mockCreatedUser: UserEntity = {
   email: mockCreateUserDTO.email,

@@ -9,9 +9,11 @@ import {
   mockCreatedUser,
   mockExistingUser,
   mockExistingUserDTO,
+  mockLoginUserDTO,
   mockResponse,
   mockUserEntity,
 } from './mockUsers';
+import * as bcryputils from 'bcrypt';
 
 const mockUserRepository = {
   findOneBy: jest.fn((user: UserEntity) => {
@@ -22,6 +24,15 @@ const mockUserRepository = {
       return Promise.resolve(mockExistingUser);
     }
     return Promise.resolve(null);
+  }),
+
+  findOne: jest.fn((user: UserEntity) => {
+    console.log('user passed in: ', user);
+    if (user.email == mockExistingUser.email) {
+      return Promise.resolve(mockExistingUser);
+    } else {
+      return Promise.resolve(null);
+    }
   }),
   save: jest.fn((user: UserEntity) => {
     return Promise.resolve(user);
@@ -89,6 +100,35 @@ describe('UserService', () => {
       await expect(
         service.createUser(mockExistingUserDTO),
       ).rejects.toThrowError('something is already taken.');
+    });
+  });
+
+  describe('loginUser', () => {
+    it('should log in valid user', async () => {
+      jest
+        .spyOn(userRepository, 'findOne')
+        .mockResolvedValueOnce(mockExistingUser);
+      jest.spyOn(bcryputils, 'compare').mockResolvedValueOnce(true);
+
+      const test = await service.loginUser(mockLoginUserDTO);
+      expect(test).toEqual(mockExistingUser);
+    });
+
+    it('should throw error for invalid user', async () => {
+      await expect(service.loginUser(mockLoginUserDTO)).rejects.toThrowError(
+        'No one by that email is available',
+      );
+    });
+
+    it('should deny invalid password', async () => {
+      jest
+        .spyOn(userRepository, 'findOne')
+        .mockResolvedValueOnce(mockExistingUser);
+      jest.spyOn(bcryputils, 'compare').mockResolvedValueOnce(false);
+
+      await expect(service.loginUser(mockLoginUserDTO)).rejects.toThrowError(
+        'No soup for you!',
+      );
     });
   });
 });
