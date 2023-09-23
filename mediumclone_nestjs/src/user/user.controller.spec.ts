@@ -12,6 +12,10 @@ let mockRequest = {
   bio: 'self',
   image: 'imageURL',
   password: '',
+  favorites: [],
+  followers: [],
+  following: [],
+  articles: [],
 } as UserEntity;
 
 let mockResponse: UserResponseInterface = {
