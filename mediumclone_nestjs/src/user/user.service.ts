@@ -26,8 +26,8 @@ export class UserService {
     const userByEmail = await this.userRepository.findOneBy({
       email: createUserDto.email,
     });
-    const userByUsername = await this.userRepository.findOne({
-      where: { username: createUserDto.username },
+    const userByUsername = await this.userRepository.findOneBy({
+      username: createUserDto.username,
     });
     if (userByEmail || userByUsername) {
       throw new HttpException(
