@@ -1,32 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { UserEntity } from './user.entity';
-import { UserResponseInterface } from 'src/types/userResponse.interface';
 import { ExpressRequest } from 'src/types/expressRequest.interface';
-
-let mockRequest = {
-  id: 1,
-  email: 'someone@somewhere.com',
-  username: 'mockUser',
-  bio: 'self',
-  image: 'imageURL',
-  password: '',
-  favorites: [],
-  followers: [],
-  following: [],
-  articles: [],
-} as UserEntity;
-
-let mockResponse: UserResponseInterface = {
-  user: {
-    email: 'someone@somewhere.com',
-    token: '',
-    username: 'mockUser',
-    bio: 'self',
-    image: 'imageURL',
-  },
-};
+import { mockResponse, mockUserEntity } from './mockUsers';
 
 describe('UserController', () => {
   let userController: UserController;
@@ -60,25 +36,25 @@ describe('UserController', () => {
 
   it('should return the current user', async () => {
     const value = await userController.currentUser(
-      mockRequest as unknown as ExpressRequest,
+      mockUserEntity as unknown as ExpressRequest,
     );
     expect(value).toEqual(mockResponse);
   });
 
   it('should return create user', async () => {
-    const value = await userController.createUser(mockRequest);
+    const value = await userController.createUser(mockUserEntity);
     expect(value).toEqual(mockResponse);
   });
 
   it('should return logged in user', async () => {
-    const value = await userController.loginUser(mockRequest);
+    const value = await userController.loginUser(mockUserEntity);
     expect(value).toEqual(mockResponse);
   });
 
   it('should return updated user', async () => {
     const value = await userController.updateCurrentUser(
-      mockRequest as any as ExpressRequest,
-      mockRequest,
+      mockUserEntity as any as ExpressRequest,
+      mockUserEntity,
     );
     expect(value).toEqual(mockResponse);
   });

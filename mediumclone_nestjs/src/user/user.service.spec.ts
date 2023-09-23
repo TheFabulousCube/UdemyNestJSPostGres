@@ -3,48 +3,29 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
-import { UserResponseInterface } from 'src/types/userResponse.interface';
-import { CreateUserDto } from 'src/dto/createUser.dto';
+import {
+  JWTheader,
+  mockCreateUserDTO,
+  mockCreatedUser,
+  mockExistingUser,
+  mockExistingUserDTO,
+  mockResponse,
+  mockUserEntity,
+} from './mockUsers';
 
-let JWTheader = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
-let mockCreateUserDTO: CreateUserDto = {
-  username: 'mockUser',
-  email: 'someone@somewhere.com',
-  password: 'mockPass',
-};
-
-let mockUserEntity: UserEntity = {
-  id: 1,
-  username: 'mockUser',
-  email: 'someone@somewhere.com',
-  bio: '',
-  image: '',
-  password: 'mockPass',
-  favorites: [],
-  followers: [],
-  following: [],
-  articles: [],
-  toUserResponseInterface: function (user): UserResponseInterface {
-    return {
-      user: {
-        email: 'someone@somewhere.com',
-        token: JWTheader,
-        username: 'mockUser',
-        bio: 'self',
-        image: 'imageURL',
-      },
-    };
-  },
-} as UserEntity;
-
-let mockResponse: UserResponseInterface = {
-  user: {
-    email: 'someone@somewhere.com',
-    token: JWTheader,
-    username: 'mockUser',
-    bio: 'self',
-    image: 'imageURL',
-  },
+const mockUserRepository = {
+  findOneBy: jest.fn((user: UserEntity) => {
+    if (
+      user.email == mockExistingUser.email ||
+      user.username == mockExistingUser.username
+    ) {
+      return Promise.resolve(mockExistingUser);
+    }
+    return Promise.resolve(null);
+  }),
+  save: jest.fn((user: UserEntity) => {
+    return Promise.resolve(user);
+  }),
 };
 
 describe('UserService', () => {
@@ -57,14 +38,7 @@ describe('UserService', () => {
         UserService,
         {
           provide: getRepositoryToken(UserEntity),
-          useValue: {
-            findOneBy: jest.fn((user: UserEntity) => {
-              return Promise.resolve(null);
-            }),
-            save: jest.fn(() => {
-              return Promise.resolve(mockUserEntity);
-            }),
-          },
+          useValue: mockUserRepository,
         },
       ],
     }).compile();
@@ -93,15 +67,28 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    it('should create a new user', async () => {
+    it('checks the db for email', async () => {
       const test = await service.createUser(mockCreateUserDTO);
       expect(userRepository.findOneBy).toHaveBeenCalledWith({
         email: mockCreateUserDTO.email,
       });
+    });
+
+    it('checks the db for username', async () => {
+      const test = await service.createUser(mockCreateUserDTO);
       expect(userRepository.findOneBy).toHaveBeenCalledWith({
         username: mockCreateUserDTO.username,
       });
-      expect(test).toBe(mockUserEntity);
+    });
+    it('should create a new user', async () => {
+      const test = await service.createUser(mockCreateUserDTO);
+      expect(test).toEqual(mockCreatedUser);
+    });
+
+    it('should reject duplicates', async () => {
+      await expect(
+        service.createUser(mockExistingUserDTO),
+      ).rejects.toThrowError('something is already taken.');
     });
   });
 });
